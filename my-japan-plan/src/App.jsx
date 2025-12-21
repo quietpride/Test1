@@ -17,7 +17,7 @@ import {
   Trash2,
   TrendingUp,
   Receipt,
-  ChevronRight
+  Building
 } from 'lucide-react';
 
 const TripApp = () => {
@@ -35,7 +35,7 @@ const TripApp = () => {
     category: 'shopping'
   });
 
-  // 初始化讀取 (防止 SSR 錯誤，加強檢查)
+  // 初始化讀取
   useEffect(() => {
     try {
       const savedProgress = localStorage.getItem('japanTripProgress');
@@ -100,71 +100,74 @@ const TripApp = () => {
     other: { label: '其他', icon: Receipt, color: 'text-gray-500 bg-gray-50' }
   };
 
-  // 行程資料
+  // --- 更新後的行程資料 ---
   const itinerary = [
     {
       day: 1, date: "3/7 (五)", title: "抵達日本・成田", highlight: "準備開始旅程",
       items: [
         { icon: Plane, text: "抵達成田機場 (NRT)", location: "Narita Airport" },
-        { icon: Hotel, text: "入住：成田日航酒店 或 ART 成田酒店", location: "Hotel Nikko Narita" }
+        { icon: Hotel, text: "入住：成田日航酒店 或 ART 成田酒店 (未BOOK)", location: "Hotel Nikko Narita" },
+        { icon: Utensils, text: "晚餐/休息：成田周邊輕鬆用餐" }
       ]
     },
     {
       day: 2, date: "3/8 (六)", title: "自駕啟程・河口湖", highlight: "Outlet 購物與溫泉",
       items: [
-        { icon: Car, text: "成田取車" },
-        { icon: ShoppingBag, text: "酒酒井 Premium Outlets", location: "Shisui Premium Outlets" },
-        { icon: Car, text: "開車前往河口湖" },
+        { icon: Car, text: "成田取車：辦理手續，檢查車況", location: "Narita Airport Car Rental" },
+        { icon: ShoppingBag, text: "酒酒井 Premium Outlets (Shisui Premium Outlets)", location: "Shisui Premium Outlets" },
+        { icon: Car, text: "開車前往河口湖 (享受風景)" },
         { icon: Hotel, text: "河口湖住宿 ＋ 溫泉", location: "Kawaguchiko Onsen" }
       ]
     },
     {
-      day: 3, date: "3/9 (日)", title: "富士山下・絕景", highlight: "新倉富士淺間神社",
+      day: 3, date: "3/9 (日)", title: "富士山下・絕景", highlight: "金山テラス & Airbnb",
       items: [
-        { icon: Coffee, text: "河口湖 Café 探店", location: "Kawaguchiko Cafe" },
-        { icon: Camera, text: "河口湖周邊拍照" },
-        { icon: Mountain, text: "新倉富士淺間神社 (必拍)", location: "Arakurayama Sengen Park" },
-        { icon: Utensils, text: "享受溫泉旅館晚餐" }
+        { icon: Coffee, text: "河口湖 Café：金山テラス", location: "Kaneyama Terrace" },
+        { icon: Camera, text: "拍照：道の駅 朝霧高原", location: "Michi no Eki Asagiri Kogen" },
+        { icon: Camera, text: "拍照：田貫湖展望台", location: "Lake Tanuki Observation Deck" },
+        { icon: Hotel, text: "住宿：Airbnb (富士山 河口湖城市渡假別墅)", location: "Kawaguchiko" }
       ]
     },
     {
-      day: 4, date: "3/10 (一)", title: "御殿場・返回東京", highlight: "最大的 Outlet",
+      day: 4, date: "3/10 (一)", title: "富士市・Chill", highlight: "夢之大橋",
       items: [
-        { icon: Car, text: "離開河口湖" },
-        { icon: ShoppingBag, text: "御殿場 Premium Outlets", location: "Gotemba Premium Outlets" },
-        { icon: Car, text: "開車前往東京" },
-        { icon: Hotel, text: "東京市區入住", location: "Tokyo Hotel" }
+        { icon: Camera, text: "影相：富士山夢之大橋", location: "Fujisan Yumeno Ohashi Bridge" },
+        { icon: Car, text: "開車行程 (富士周邊/往東京方向)" },
+        { icon: Hotel, text: "住宿：Airbnb (富士山 河口湖城市渡假別墅)", location: "Kawaguchiko" }
       ]
     },
     {
-      day: 5, date: "3/11 (二)", title: "東京 Chill 此刻", highlight: "代官山 / 中目黑",
+      day: 5, date: "3/11 (二)", title: "御殿場・返回東京", highlight: "中目黑 / 代官山",
       items: [
-        { icon: Coffee, text: "代官山 散策 & Café", location: "Daikanyama" },
-        { icon: Camera, text: "中目黑 散步", location: "Nakameguro" },
-        { icon: ShoppingBag, text: "市區逛街" }
+        { icon: Car, text: "Check-out 離開河口湖" },
+        { icon: ShoppingBag, text: "OPTION: 御殿場 Premium Outlets", location: "Gotemba Premium Outlets" },
+        { icon: Car, text: "開車前往東京市區 (留意塞車)" },
+        { icon: Hotel, text: "住宿：東京 Airbnb (未BOOK)", location: "Tokyo" }
       ]
     },
     {
-      day: 6, date: "3/12 (三)", title: "藝術與休閒", highlight: "teamLab / 美術館",
+      day: 6, date: "3/12 (三)", title: "藝術與休閒", highlight: "木更津 Outlet / teamLab",
       items: [
-        { icon: Camera, text: "teamLab Planets / Borderless", location: "teamLab Planets Tokyo" },
-        { icon: MapPin, text: "美術館或公園野餐" },
-        { icon: Coffee, text: "下午茶 Café Time" }
+        { icon: ShoppingBag, text: "三井 OUTLET PARK 木更津", location: "Mitsui Outlet Park Kisarazu" },
+        { icon: MapPin, text: "東京市區行程 / teamLab" },
+        { icon: Hotel, text: "住宿：東京 Airbnb (未BOOK)", location: "Tokyo" }
       ]
     },
     {
-      day: 7, date: "3/13 (四)", title: "最後衝刺", highlight: "自由購物行程",
+      day: 7, date: "3/13 (四)", title: "最後衝刺", highlight: "SHIBUYA SKY & 購物",
       items: [
-        { icon: ShoppingBag, text: "東京最後行街購物", location: "Shinjuku" },
+        { icon: Building, text: "SHIBUYA SKY (澀谷天空) 必去打卡", location: "SHIBUYA SKY" },
+        { icon: ShoppingBag, text: "最後購物：新宿 / 銀座 / 澀谷", location: "Shibuya Crossing" },
         { icon: MapPin, text: "自選自由行程" },
-        { icon: Utensils, text: "享用最後的晚餐" }
+        { icon: Utensils, text: "最後的晚餐 (燒肉/壽司)" }
       ]
     },
     {
       day: 8, date: "3/14 (五)", title: "再見日本", highlight: "還車與返港",
       items: [
-        { icon: Car, text: "前往成田機場還車", location: "Narita Airport Car Rental" },
-        { icon: Plane, text: "UO871 航班回港" }
+        { icon: Car, text: "前往成田機場還車 (預留入油時間)", location: "Narita Airport Car Rental Return" },
+        { icon: Plane, text: "辦理登機：UO871 航班" },
+        { icon: Plane, text: "回港：平安回家" }
       ]
     }
   ];
