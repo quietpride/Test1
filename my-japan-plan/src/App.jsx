@@ -17,7 +17,8 @@ import {
   Trash2,
   TrendingUp,
   Receipt,
-  Building
+  Building,
+  Link as LinkIcon
 } from 'lucide-react';
 
 const TripApp = () => {
@@ -114,7 +115,7 @@ const TripApp = () => {
       day: 2, date: "3/8 (六)", title: "自駕啟程・河口湖", highlight: "Outlet 購物與溫泉",
       items: [
         { icon: Car, text: "成田取車：辦理手續，檢查車況", location: "Narita Airport Car Rental" },
-        { icon: ShoppingBag, text: "酒酒井 Premium Outlets (Shisui Premium Outlets)", location: "Shisui Premium Outlets" },
+        { icon: ShoppingBag, text: "酒酒井 Premium Outlets", location: "Shisui Premium Outlets" },
         { icon: Car, text: "開車前往河口湖 (享受風景)" },
         { icon: Hotel, text: "河口湖住宿 ＋ 溫泉", location: "Kawaguchiko Onsen" }
       ]
@@ -122,44 +123,97 @@ const TripApp = () => {
     {
       day: 3, date: "3/9 (日)", title: "富士山下・絕景", highlight: "金山テラス & Airbnb",
       items: [
-        { icon: Coffee, text: "河口湖 Café：金山テラス", location: "Kaneyama Terrace" },
-        { icon: Camera, text: "拍照：道の駅 朝霧高原", location: "Michi no Eki Asagiri Kogen" },
-        { icon: Camera, text: "拍照：田貫湖展望台", location: "Lake Tanuki Observation Deck" },
+        { 
+          icon: Coffee, 
+          text: "河口湖 Café：金山テラス", 
+          link: "https://maps.app.goo.gl/h8VdVtr5AvJwH8Nw9"
+        },
+        { 
+          icon: Camera, 
+          text: "拍照：道の駅 朝霧高原", 
+          link: "https://maps.app.goo.gl/LaMFeU74X4yokKLr7"
+        },
+        { 
+          icon: Mountain, 
+          text: "景點：馬飼野牧場", 
+          link: "https://maps.app.goo.gl/BzrU4gtfa7UyANno8"
+        },
+        { 
+          icon: Camera, 
+          text: "拍照：田貫湖展望台", 
+          link: "https://maps.app.goo.gl/VN6YhcNT3BF7rgaj7"
+        },
+        { 
+          icon: Camera, 
+          text: "拍照：鳴沢村活き活き広場", 
+          link: "https://maps.app.goo.gl/DkdNguPXo722J4yj7",
+          note: "REMARKS: 先睇 GOOGLE MAP"
+        },
         { icon: Hotel, text: "住宿：Airbnb (富士山 河口湖城市渡假別墅)", location: "Kawaguchiko" }
       ]
     },
     {
-      day: 4, date: "3/10 (一)", title: "富士市・Chill", highlight: "夢之大橋",
+      day: 4, date: "3/10 (一)", title: "富士市・Chill", highlight: "夢之大橋 / 箱根",
       items: [
         { icon: Camera, text: "影相：富士山夢之大橋", location: "Fujisan Yumeno Ohashi Bridge" },
-        { icon: Car, text: "開車行程 (富士周邊/往東京方向)" },
+        { 
+          icon: Coffee, 
+          text: "(Optional) 休息：星巴克 富士川服務區(下行)店", 
+          location: "Starbucks Fujikawa Service Area Down Line" 
+        },
+        { icon: Car, text: "Optional: 箱根感受髮夾灣" },
         { icon: Hotel, text: "住宿：Airbnb (富士山 河口湖城市渡假別墅)", location: "Kawaguchiko" }
       ]
     },
     {
-      day: 5, date: "3/11 (二)", title: "御殿場・返回東京", highlight: "中目黑 / 代官山",
+      day: 5, date: "3/11 (二)", title: "御殿場・返回東京", highlight: "中目黑 / 海膽午餐",
       items: [
         { icon: Car, text: "Check-out 離開河口湖" },
         { icon: ShoppingBag, text: "OPTION: 御殿場 Premium Outlets", location: "Gotemba Premium Outlets" },
         { icon: Car, text: "開車前往東京市區 (留意塞車)" },
-        { icon: Hotel, text: "住宿：東京 Airbnb (未BOOK)", location: "Tokyo" }
+        { 
+          icon: Utensils, 
+          text: "午餐: Miko Sushi Ginza 海膽 (未book)", 
+          link: "https://www.threads.com/@k.a.l.o/post/DR4MJbOAfY6",
+          note: "記得預約！"
+        },
+        { 
+          icon: Hotel, 
+          text: "住宿：HM12613 Japanesestyle villa on the YamanoteLine", 
+          link: "https://maps.app.goo.gl/juE48Xk6KUhzyT2T6" 
+        }
       ]
     },
     {
-      day: 6, date: "3/12 (三)", title: "藝術與休閒", highlight: "木更津 Outlet / teamLab",
+      day: 6, date: "3/12 (三)", title: "藝術與休閒", highlight: "木更津 Outlet / 居酒屋",
       items: [
         { icon: ShoppingBag, text: "三井 OUTLET PARK 木更津", location: "Mitsui Outlet Park Kisarazu" },
-        { icon: MapPin, text: "東京市區行程 / teamLab" },
-        { icon: Hotel, text: "住宿：東京 Airbnb (未BOOK)", location: "Tokyo" }
+        { icon: MapPin, text: "東京市區行程" },
+        { 
+          icon: Utensils, 
+          text: "晚餐: ビストロ ミートマン (Bistro Meat Man) (未BOOK)", 
+          link: "https://tabelog.com/tw/tokyo/A1303/A130301/13229352/",
+          note: "記得預約！"
+        },
+        { 
+          icon: Hotel, 
+          text: "住宿：HM12613 Japanesestyle villa on the YamanoteLine", 
+          link: "https://maps.app.goo.gl/juE48Xk6KUhzyT2T6" 
+        }
       ]
     },
     {
       day: 7, date: "3/13 (四)", title: "最後衝刺", highlight: "SHIBUYA SKY & 購物",
       items: [
-        { icon: Building, text: "SHIBUYA SKY (澀谷天空) 必去打卡", location: "SHIBUYA SKY" },
+        { icon: Building, text: "SHIBUYA SKY (澀谷天空) (未BOOK)", location: "SHIBUYA SKY" },
         { icon: ShoppingBag, text: "最後購物：新宿 / 銀座 / 澀谷", location: "Shibuya Crossing" },
         { icon: MapPin, text: "自選自由行程" },
-        { icon: Utensils, text: "最後的晚餐 (燒肉/壽司)" }
+        { icon: Utensils, text: "最後的晚餐 (燒肉/壽司)" },
+        { 
+          icon: Hotel, 
+          text: "住宿：HM12613 Japanesestyle villa on the YamanoteLine", 
+          link: "https://maps.app.goo.gl/juE48Xk6KUhzyT2T6" 
+        }
       ]
     },
     {
@@ -175,6 +229,11 @@ const TripApp = () => {
   const openMap = (location) => {
     if (!location) return;
     window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`, '_blank');
+  };
+  
+  const openLink = (url) => {
+    if (!url) return;
+    window.open(url, '_blank');
   };
 
   const calculateProgress = () => {
@@ -212,6 +271,10 @@ const TripApp = () => {
                   <h3 className={`font-semibold text-lg leading-tight mb-1 ${isCompleted ? "text-slate-500 line-through decoration-slate-400" : "text-slate-800"}`}>
                     {item.text}
                   </h3>
+                  {item.note && (
+                    <p className="text-xs text-orange-500 font-bold mt-1">{item.note}</p>
+                  )}
+                  
                   <div className="flex flex-wrap gap-2 mt-3">
                     <button onClick={() => toggleItem(activeDay, index)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${isCompleted ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"}`}>
                       {isCompleted ? <CheckCircle2 size={14} /> : <Circle size={14} />}
@@ -220,6 +283,11 @@ const TripApp = () => {
                     {item.location && (
                       <button onClick={() => openMap(item.location)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600">
                         <MapPin size={14} /> 導航
+                      </button>
+                    )}
+                    {item.link && (
+                      <button onClick={() => openLink(item.link)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-orange-50 text-orange-600">
+                        <LinkIcon size={14} /> 連結/地圖
                       </button>
                     )}
                   </div>
