@@ -18,7 +18,11 @@ import {
   TrendingUp,
   Receipt,
   Building,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Sparkles,
+  X,
+  Loader2,
+  MessageSquareQuote
 } from 'lucide-react';
 
 const TripApp = () => {
@@ -35,6 +39,14 @@ const TripApp = () => {
     amount: '',
     category: 'shopping'
   });
+
+  // AI 狀態
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResponse, setAiResponse] = useState('');
+  
+  // Gemini API Key (請在此填入您的 API Key)
+  const apiKey = ""; 
 
   // 初始化讀取
   useEffect(() => {
@@ -93,6 +105,74 @@ const TripApp = () => {
     return expenses.reduce((acc, curr) => acc + curr.amount, 0);
   };
 
+  // Gemini AI 功能
+  const fetchGeminiAdvice = async () => {
+    setShowAiModal(true);
+    setAiLoading(true);
+    setAiResponse('');
+
+    const currentDayData = itinerary.find(d => d.day === activeDay);
+    const dayItems = currentDayData.items.map(i => i.text).join(", ");
+    
+    const prompt = `
+      你是一位專業、幽默的日本旅遊嚮導。
+      這是我的日本旅行第 ${activeDay} 天行程：
+      標題：${currentDayData.title}
+      重點：${currentDayData.highlight}
+      詳細行程：${dayItems}
+
+      請用繁體中文 (台灣用語) 給我針對這一天行程的 4 個實用建議。
+      格式請用 HTML 標籤 (例如 <b>, <br/>) 讓顯示更清楚，不要用 Markdown。
+      
+      請包含以下類別：
+      1. 🚗 **交通貼士** (針對自駕或電車的具體建議，例如御殿場或河口湖的路況/停車)
+      2. 💡 **私房推薦** (行程附近的隱藏美食或拍照點)
+      3. 🗣️ **實用日語** (針對當天活動的一句實用日語及發音/意思)
+      4. ⚠️ **貼心提醒** (天氣、穿著或避開人潮的建議)
+      
+      語氣要像朋友一樣親切。
+    `;
+
+    try {
+      const result = await callGeminiAPI(prompt);
+      setAiResponse(result);
+    } catch (error) {
+      console.error("AI Error:", error);
+      setAiResponse("抱歉，AI 導遊現在有點忙碌 (連線錯誤或缺少 API Key)，請稍後再試。🚗💨");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const callGeminiAPI = async (prompt) => {
+    if (!apiKey) {
+        // 這裡可以處理沒有 API Key 的情況，目前先讓它嘗試呼叫或顯示錯誤
+    }
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+    const payload = {
+      contents: [{ parts: [{ text: prompt }] }]
+    };
+
+    const delays = [1000, 2000, 4000];
+    for (let i = 0; i < 3; i++) {
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error(`API call failed: ${response.statusText}`);
+
+        const data = await response.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || "沒有收到回應";
+      } catch (err) {
+        if (i === 2) throw err;
+        await new Promise(resolve => setTimeout(resolve, delays[i]));
+      }
+    }
+  };
+
   const categories = {
     food: { label: '飲食', icon: Utensils, color: 'text-orange-500 bg-orange-50' },
     shopping: { label: '購物', icon: ShoppingBag, color: 'text-pink-500 bg-pink-50' },
@@ -101,7 +181,7 @@ const TripApp = () => {
     other: { label: '其他', icon: Receipt, color: 'text-gray-500 bg-gray-50' }
   };
 
-  // --- 更新後的行程資料 ---
+  // --- 行程資料 ---
   const itinerary = [
     {
       day: 1, date: "3/7 (五)", title: "抵達日本・成田", highlight: "準備開始旅程",
@@ -248,13 +328,24 @@ const TripApp = () => {
     const currentDayData = itinerary.find(d => d.day === activeDay);
     return (
       <div className="space-y-4 pb-24">
-        {/* Day Header */}
+        {/* Day Header with AI Button */}
         <div className="mb-4">
-          <h2 className="text-2xl font-bold text-slate-800">{currentDayData.title}</h2>
-          <p className="text-pink-500 font-medium flex items-center gap-1 mt-1">
-            <Mountain size={16} />
-            {currentDayData.highlight}
-          </p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-800">{currentDayData.title}</h2>
+              <p className="text-pink-500 font-medium flex items-center gap-1 mt-1">
+                <Mountain size={16} />
+                {currentDayData.highlight}
+              </p>
+            </div>
+            <button 
+              onClick={fetchGeminiAdvice}
+              className="flex items-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-3 py-2 rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95"
+            >
+              <Sparkles size={14} />
+              AI 導遊建議
+            </button>
+          </div>
         </div>
 
         {/* Timeline Items */}
@@ -475,6 +566,61 @@ const TripApp = () => {
           </button>
         </div>
       </div>
+
+      {/* AI Modal */}
+      {showAiModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-md max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-5 border-b border-slate-100">
+              <div className="flex items-center gap-2 text-indigo-600">
+                <Sparkles className="fill-current" size={20} />
+                <h3 className="font-bold text-lg">AI 導遊建議 (Day {activeDay})</h3>
+              </div>
+              <button 
+                onClick={() => setShowAiModal(false)}
+                className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+              >
+                <X size={20} className="text-slate-400" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto min-h-[200px]">
+              {aiLoading ? (
+                <div className="flex flex-col items-center justify-center py-10 gap-4 text-slate-400">
+                  <Loader2 size={40} className="animate-spin text-indigo-500" />
+                  <p className="text-sm font-medium animate-pulse">正在為您分析行程...</p>
+                </div>
+              ) : (
+                <div className="prose prose-sm prose-indigo max-w-none">
+                  {aiResponse ? (
+                    <div 
+                      className="space-y-4 text-slate-600 leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: aiResponse.replace(/\n/g, '<br/>') }} 
+                    />
+                  ) : (
+                    <div className="text-center py-8 text-slate-400">
+                      <MessageSquareQuote size={40} className="mx-auto mb-2 opacity-50" />
+                      <p>點擊按鈕來獲取建議！</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-100 bg-slate-50 rounded-b-3xl">
+              <button 
+                onClick={() => setShowAiModal(false)}
+                className="w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors"
+              >
+                知道了
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
