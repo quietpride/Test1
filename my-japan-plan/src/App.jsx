@@ -22,11 +22,13 @@ import {
   Sparkles,
   X,
   Loader2,
-  MessageSquareQuote
+  MessageSquareQuote,
+  ClipboardList,
+  CheckSquare
 } from 'lucide-react';
 
 const TripApp = () => {
-  const [activeTab, setActiveTab] = useState('schedule'); // 'schedule' or 'wallet'
+  const [activeTab, setActiveTab] = useState('schedule'); // 'schedule', 'wallet', or 'todo'
   const [activeDay, setActiveDay] = useState(1);
   
   // 行程狀態
@@ -39,6 +41,10 @@ const TripApp = () => {
     amount: '',
     category: 'shopping'
   });
+
+  // To-Do List 狀態
+  const [todos, setTodos] = useState([]);
+  const [todoInput, setTodoInput] = useState('');
 
   // AI 狀態
   const [showAiModal, setShowAiModal] = useState(false);
@@ -53,9 +59,11 @@ const TripApp = () => {
     try {
       const savedProgress = localStorage.getItem('japanTripProgress');
       const savedExpenses = localStorage.getItem('japanTripExpenses');
+      const savedTodos = localStorage.getItem('japanTripTodos');
       
       if (savedProgress) setCompletedItems(JSON.parse(savedProgress));
       if (savedExpenses) setExpenses(JSON.parse(savedExpenses));
+      if (savedTodos) setTodos(JSON.parse(savedTodos));
     } catch (e) {
       console.error("讀取儲存資料失敗", e);
     }
@@ -69,6 +77,10 @@ const TripApp = () => {
   useEffect(() => {
     localStorage.setItem('japanTripExpenses', JSON.stringify(expenses));
   }, [expenses]);
+
+  useEffect(() => {
+    localStorage.setItem('japanTripTodos', JSON.stringify(todos));
+  }, [todos]);
 
   // 行程邏輯
   const toggleItem = (dayIndex, itemIndex) => {
@@ -103,6 +115,30 @@ const TripApp = () => {
 
   const getTotalExpenses = () => {
     return expenses.reduce((acc, curr) => acc + curr.amount, 0);
+  };
+
+  // To-Do 邏輯
+  const addTodo = (e) => {
+    e.preventDefault();
+    if (!todoInput.trim()) return;
+
+    const newTodo = {
+      id: Date.now(),
+      text: todoInput,
+      completed: false
+    };
+    setTodos([newTodo, ...todos]);
+    setTodoInput('');
+  };
+
+  const toggleTodo = (id) => {
+    setTodos(todos.map(todo => 
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    ));
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter(todo => todo.id !== id));
   };
 
   // Gemini AI 功能
@@ -146,7 +182,7 @@ const TripApp = () => {
 
   const callGeminiAPI = async (prompt) => {
     if (!apiKey) {
-        // 這裡可以處理沒有 API Key 的情況，目前先讓它嘗試呼叫或顯示錯誤
+       // handle missing key
     }
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
     const payload = {
@@ -186,9 +222,15 @@ const TripApp = () => {
     {
       day: 1, date: "3/7 (五)", title: "抵達日本・成田", highlight: "準備開始旅程",
       items: [
-        { icon: Plane, text: "抵達成田機場 (NRT)", location: "Narita Airport" },
-        { icon: Hotel, text: "入住：成田日航酒店 或 ART 成田酒店 (未BOOK)", location: "Hotel Nikko Narita" },
-        { icon: Utensils, text: "晚餐/休息：成田周邊輕鬆用餐" }
+        { icon: Plane, text: "抵達成田機場 (NRT) 14:00~19:05 UO650", location: "Narita Airport" },
+        { icon: Utensils, text: "落機後機場食野" },
+        { 
+          icon: Utensils, 
+          text: "OPTION: 磯丸水産 24HRS (成田店)", 
+          link: "https://maps.app.goo.gl/xf7cUAaELEWEGB7B7",
+          note: "宵夜好去處"
+        },
+        { icon: Hotel, text: "入住：成田日航酒店 或 ART 成田酒店 (未BOOK)", location: "Hotel Nikko Narita" }
       ]
     },
     {
@@ -246,7 +288,7 @@ const TripApp = () => {
       ]
     },
     {
-      day: 5, date: "3/11 (二)", title: "御殿場・返回東京", highlight: "中目黑 / 海膽午餐",
+      day: 5, date: "3/11 (二)", title: "御殿場・返回東京", highlight: "中目黑 / 表參道",
       items: [
         { icon: Car, text: "Check-out 離開河口湖" },
         { icon: ShoppingBag, text: "OPTION: 御殿場 Premium Outlets", location: "Gotemba Premium Outlets" },
@@ -256,6 +298,16 @@ const TripApp = () => {
           text: "午餐: Miko Sushi Ginza 海膽 (未book)", 
           link: "https://www.threads.com/@k.a.l.o/post/DR4MJbOAfY6",
           note: "記得預約！"
+        },
+        { 
+          icon: MapPin, 
+          text: "散策：中目黑 (Nakameguro) - 目黑川/特色店", 
+          location: "Nakameguro" 
+        },
+        { 
+          icon: ShoppingBag, 
+          text: "逛街：表參道 (Omotesando) - 精品/建築", 
+          location: "Omotesando" 
         },
         { 
           icon: Hotel, 
@@ -300,7 +352,7 @@ const TripApp = () => {
       day: 8, date: "3/14 (五)", title: "再見日本", highlight: "還車與返港",
       items: [
         { icon: Car, text: "前往成田機場還車 (預留入油時間)", location: "Narita Airport Car Rental Return" },
-        { icon: Plane, text: "辦理登機：UO871 航班" },
+        { icon: Plane, text: "回程航班：16:55~21:25 UO871", location: "Narita Airport" },
         { icon: Plane, text: "回港：平安回家" }
       ]
     }
@@ -491,6 +543,79 @@ const TripApp = () => {
     </div>
   );
 
+  const renderTodo = () => (
+    <div className="space-y-6 pb-24">
+      {/* Header Card */}
+      <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-3xl p-6 text-white shadow-lg shadow-emerald-200">
+        <div className="flex items-center justify-between mb-2 opacity-80">
+          <span className="text-sm font-medium">待辦事項清單</span>
+          <ClipboardList size={20} />
+        </div>
+        <div className="text-2xl font-bold tracking-tight">
+          {todos.filter(t => !t.completed).length} 項未完成
+        </div>
+        <div className="mt-4 flex gap-2 text-xs opacity-70">
+          <span className="bg-white/20 px-2 py-1 rounded-md">總共 {todos.length} 項</span>
+        </div>
+      </div>
+
+      {/* Input Form */}
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+        <form onSubmit={addTodo} className="flex gap-3">
+          <input 
+            type="text" 
+            placeholder="新增待辦事項 (e.g. 買藥妝、借Wi-Fi)" 
+            value={todoInput}
+            onChange={e => setTodoInput(e.target.value)}
+            className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+          <button type="submit" className="bg-slate-900 text-white font-bold p-3 rounded-xl hover:bg-slate-800 transition-colors">
+            <Plus size={24} />
+          </button>
+        </form>
+      </div>
+
+      {/* Todo List */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-bold text-slate-500 ml-1">清單項目</h3>
+        {todos.length === 0 ? (
+          <div className="text-center py-10 text-slate-400 bg-slate-50 rounded-2xl border-dashed border-2 border-slate-200">
+            <CheckSquare className="mx-auto mb-2 opacity-50" size={32} />
+            <p>目前沒有待辦事項</p>
+          </div>
+        ) : (
+          todos.map((todo) => (
+            <div 
+              key={todo.id} 
+              className={`flex items-center gap-3 bg-white p-4 rounded-xl shadow-sm border transition-all ${
+                todo.completed ? 'border-slate-100 opacity-60' : 'border-slate-200'
+              }`}
+            >
+              <button 
+                onClick={() => toggleTodo(todo.id)}
+                className={`shrink-0 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ${
+                  todo.completed 
+                    ? 'bg-emerald-500 border-emerald-500 text-white' 
+                    : 'border-slate-300 text-transparent hover:border-emerald-400'
+                }`}
+              >
+                <CheckSquare size={14} fill="currentColor" />
+              </button>
+              
+              <span className={`flex-1 font-medium ${todo.completed ? 'line-through text-slate-400' : 'text-slate-800'}`}>
+                {todo.text}
+              </span>
+
+              <button onClick={() => deleteTodo(todo.id)} className="text-slate-300 hover:text-red-500 p-2">
+                <Trash2 size={18} />
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
       {/* Header Area */}
@@ -510,40 +635,41 @@ const TripApp = () => {
         </div>
       </div>
 
-      {/* Day Selector (Sticky) */}
-      <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-slate-200 shadow-sm">
-        <div className="flex overflow-x-auto py-3 px-4 gap-3 no-scrollbar scroll-smooth">
-          {itinerary.map((day) => (
-            <button
-              key={day.day}
-              onClick={() => setActiveDay(day.day)}
-              className={`flex-shrink-0 flex flex-col items-center justify-center min-w-[4.5rem] h-16 rounded-xl transition-all duration-200 ${
-                activeDay === day.day
-                  ? "bg-indigo-600 text-white shadow-md scale-105"
-                  : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-              }`}
-            >
-              <span className="text-xs font-medium">Day {day.day}</span>
-              <span className={`text-sm font-bold ${activeDay === day.day ? "text-white" : "text-slate-700"}`}>
-                {day.date.split(' ')[0]}
-              </span>
-            </button>
-          ))}
-        </div>
-        {/* Progress Bar (Only show in Schedule tab) */}
-        {activeTab === 'schedule' && (
+      {/* Day Selector (Sticky) - Only show in Schedule tab */}
+      {activeTab === 'schedule' && (
+        <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-slate-200 shadow-sm">
+          <div className="flex overflow-x-auto py-3 px-4 gap-3 no-scrollbar scroll-smooth">
+            {itinerary.map((day) => (
+              <button
+                key={day.day}
+                onClick={() => setActiveDay(day.day)}
+                className={`flex-shrink-0 flex flex-col items-center justify-center min-w-[4.5rem] h-16 rounded-xl transition-all duration-200 ${
+                  activeDay === day.day
+                    ? "bg-indigo-600 text-white shadow-md scale-105"
+                    : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                }`}
+              >
+                <span className="text-xs font-medium">Day {day.day}</span>
+                <span className={`text-sm font-bold ${activeDay === day.day ? "text-white" : "text-slate-700"}`}>
+                  {day.date.split(' ')[0]}
+                </span>
+              </button>
+            ))}
+          </div>
           <div className="w-full bg-slate-100 h-1">
             <div 
               className="bg-pink-500 h-1 transition-all duration-500"
               style={{ width: `${calculateProgress()}%` }}
             ></div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="px-4 py-6 max-w-md mx-auto min-h-[calc(100vh-250px)]">
-        {activeTab === 'schedule' ? renderSchedule() : renderWallet()}
+        {activeTab === 'schedule' && renderSchedule()}
+        {activeTab === 'wallet' && renderWallet()}
+        {activeTab === 'todo' && renderTodo()}
       </div>
 
       {/* Bottom Navigation */}
@@ -557,6 +683,14 @@ const TripApp = () => {
             <span className="text-[10px] font-bold">行程</span>
           </button>
           
+          <button 
+            onClick={() => setActiveTab('todo')}
+            className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'todo' ? 'text-indigo-600' : 'text-slate-400'}`}
+          >
+            <ClipboardList size={24} strokeWidth={activeTab === 'todo' ? 2.5 : 2} />
+            <span className="text-[10px] font-bold">待辦</span>
+          </button>
+
           <button 
             onClick={() => setActiveTab('wallet')}
             className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'wallet' ? 'text-indigo-600' : 'text-slate-400'}`}
