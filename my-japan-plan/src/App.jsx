@@ -295,9 +295,9 @@ const TripApp = () => {
         { icon: Car, text: "開車前往東京市區 (留意塞車)" },
         { 
           icon: Utensils, 
-          text: "午餐: Miko Sushi Ginza 海膽 (未book)", 
+          text: "晚餐: Miko Sushi Ginza 海膽 (已BOOK 17:00)", 
           link: "https://www.threads.com/@k.a.l.o/post/DR4MJbOAfY6",
-          note: "記得預約！"
+          note: "預約時間: 17:00"
         },
         { 
           icon: MapPin, 
@@ -323,9 +323,9 @@ const TripApp = () => {
         { icon: MapPin, text: "東京市區行程" },
         { 
           icon: Utensils, 
-          text: "晚餐: ビストロ ミートマン (Bistro Meat Man) (未BOOK)", 
+          text: "晚餐: ビストロ ミートマン (Bistro Meat Man) (已BOOK 19:00)", 
           link: "https://tabelog.com/tw/tokyo/A1303/A130301/13229352/",
-          note: "記得預約！"
+          note: "預約時間: 19:00"
         },
         { 
           icon: Hotel, 
@@ -340,7 +340,11 @@ const TripApp = () => {
         { icon: Building, text: "SHIBUYA SKY (澀谷天空) (未BOOK)", location: "SHIBUYA SKY" },
         { icon: ShoppingBag, text: "最後購物：新宿 / 銀座 / 澀谷", location: "Shibuya Crossing" },
         { icon: MapPin, text: "自選自由行程" },
-        { icon: Utensils, text: "最後的晚餐 (燒肉/壽司)" },
+        { 
+          icon: Utensils, 
+          text: "晚餐: Peter Luger Steak House (已BOOK 19:15)", 
+          note: "預約時間: 19:15"
+        },
         { 
           icon: Hotel, 
           text: "住宿：HM12613 Japanesestyle villa on the YamanoteLine", 
