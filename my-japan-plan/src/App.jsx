@@ -24,11 +24,12 @@ import {
   Loader2,
   MessageSquareQuote,
   ClipboardList,
-  CheckSquare
+  CheckSquare,
+  List
 } from 'lucide-react';
 
 const TripApp = () => {
-  const [activeTab, setActiveTab] = useState('schedule'); // 'schedule', 'wallet', or 'todo'
+  const [activeTab, setActiveTab] = useState('schedule'); // 'schedule', 'overview', 'wallet', or 'todo'
   const [activeDay, setActiveDay] = useState(1);
   
   // 行程狀態
@@ -42,8 +43,17 @@ const TripApp = () => {
     category: 'shopping'
   });
 
-  // To-Do List 狀態
-  const [todos, setTodos] = useState([]);
+  // To-Do List 預設項目
+  const defaultTodos = [
+    { id: 'fixed-1', text: '第一晚食咩', completed: false },
+    { id: 'fixed-2', text: '第二日LUNCH', completed: false },
+    { id: 'fixed-3', text: '第三晚搵超市買燒肉煮', completed: false },
+    { id: 'fixed-4', text: '第四日LUNCH', completed: false },
+    { id: 'fixed-5', text: '第四晚晚餐', completed: false },
+  ];
+
+  // To-Do List 狀態 (初始值設為預設項目)
+  const [todos, setTodos] = useState(defaultTodos);
   const [todoInput, setTodoInput] = useState('');
 
   // AI 狀態
@@ -63,7 +73,14 @@ const TripApp = () => {
       
       if (savedProgress) setCompletedItems(JSON.parse(savedProgress));
       if (savedExpenses) setExpenses(JSON.parse(savedExpenses));
-      if (savedTodos) setTodos(JSON.parse(savedTodos));
+      
+      if (savedTodos) {
+        const parsedTodos = JSON.parse(savedTodos);
+        // 如果儲存的清單不為空，則使用儲存的；如果是空的，則保留預設值 (讓您能看到新增的固定項目)
+        if (parsedTodos.length > 0) {
+          setTodos(parsedTodos);
+        }
+      }
     } catch (e) {
       console.error("讀取儲存資料失敗", e);
     }
@@ -230,7 +247,7 @@ const TripApp = () => {
           link: "https://maps.app.goo.gl/xf7cUAaELEWEGB7B7",
           note: "宵夜好去處"
         },
-        { icon: Hotel, text: "入住：成田日航酒店 或 ART 成田酒店 (未BOOK)", location: "Hotel Nikko Narita" }
+        { icon: Hotel, text: "入住：ART 成田酒店 (已BOOK)", location: "ART Hotel Narita" }
       ]
     },
     {
@@ -379,6 +396,77 @@ const TripApp = () => {
   };
 
   // --- Render Functions ---
+
+  const renderOverview = () => (
+    <div className="space-y-6 pb-24">
+      {/* Overview Header */}
+      <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-3xl p-6 text-white shadow-lg shadow-blue-200">
+        <div className="flex items-center justify-between mb-2 opacity-80">
+          <span className="text-sm font-medium">行程總覽</span>
+          <List size={20} />
+        </div>
+        <div className="flex items-end gap-2">
+          <h2 className="text-3xl font-bold">8 天 7 夜</h2>
+          <span className="text-lg opacity-90 mb-1">之旅</span>
+        </div>
+        <p className="text-sm opacity-90 mt-2 flex items-center gap-1">
+          <MapPin size={14} /> 東京・河口湖・自駕遊
+        </p>
+      </div>
+
+      {/* Daily Summary */}
+      <div className="space-y-4">
+        {itinerary.map((day) => (
+          <div key={day.day} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
+            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-50">
+              <span className="bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-lg text-xs font-bold">Day {day.day}</span>
+              <span className="font-bold text-slate-800 text-sm">{day.date.split(' ')[0]}</span>
+              <span className="text-slate-500 text-xs ml-auto truncate max-w-[120px]">{day.title}</span>
+            </div>
+            <div className="space-y-3">
+              {day.items.map((item, idx) => {
+                  const Icon = item.icon;
+                  return (
+                      <div key={idx} className="flex gap-3 text-sm group">
+                          <div className="mt-0.5 text-slate-400 shrink-0 group-hover:text-indigo-500 transition-colors">
+                            <Icon size={16} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                              <div className="text-slate-700 font-medium leading-tight">
+                                  {item.text}
+                                  {item.note && <span className="text-orange-500 text-xs ml-2 inline-block">({item.note})</span>}
+                              </div>
+                              {/* Links row */}
+                              {(item.link || item.location) && (
+                                <div className="flex gap-3 mt-1.5">
+                                    {item.link && (
+                                        <button 
+                                          onClick={() => openLink(item.link)} 
+                                          className="flex items-center gap-1 text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-100 transition-colors"
+                                        >
+                                            <LinkIcon size={10} /> 連結
+                                        </button>
+                                    )}
+                                    {item.location && (
+                                        <button 
+                                          onClick={() => openMap(item.location)} 
+                                          className="flex items-center gap-1 text-[10px] bg-slate-50 text-slate-500 px-2 py-0.5 rounded hover:bg-slate-100 transition-colors"
+                                        >
+                                            <MapPin size={10} /> 地圖
+                                        </button>
+                                    )}
+                                </div>
+                              )}
+                          </div>
+                      </div>
+                  );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   const renderSchedule = () => {
     const currentDayData = itinerary.find(d => d.day === activeDay);
@@ -672,6 +760,7 @@ const TripApp = () => {
       {/* Main Content */}
       <div className="px-4 py-6 max-w-md mx-auto min-h-[calc(100vh-250px)]">
         {activeTab === 'schedule' && renderSchedule()}
+        {activeTab === 'overview' && renderOverview()}
         {activeTab === 'wallet' && renderWallet()}
         {activeTab === 'todo' && renderTodo()}
       </div>
@@ -687,6 +776,14 @@ const TripApp = () => {
             <span className="text-[10px] font-bold">行程</span>
           </button>
           
+          <button 
+            onClick={() => setActiveTab('overview')}
+            className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'overview' ? 'text-indigo-600' : 'text-slate-400'}`}
+          >
+            <List size={24} strokeWidth={activeTab === 'overview' ? 2.5 : 2} />
+            <span className="text-[10px] font-bold">總覽</span>
+          </button>
+
           <button 
             onClick={() => setActiveTab('todo')}
             className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'todo' ? 'text-indigo-600' : 'text-slate-400'}`}
