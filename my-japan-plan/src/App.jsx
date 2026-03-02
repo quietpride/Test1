@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Plane, 
   Hotel, 
@@ -19,13 +19,13 @@ import {
   Receipt,
   Building,
   Link as LinkIcon,
-  Sparkles,
-  X,
-  Loader2,
-  MessageSquareQuote,
   ClipboardList,
   CheckSquare,
-  List
+  List,
+  Download,
+  Upload,
+  RefreshCw,
+  Users
 } from 'lucide-react';
 
 const TripApp = () => {
@@ -42,6 +42,8 @@ const TripApp = () => {
     amount: '',
     category: 'shopping'
   });
+  const [splitCount, setSplitCount] = useState(1);
+  const EXCHANGE_RATE = 0.052; // 簡單匯率設定 (JPY -> HKD)
 
   // To-Do List 預設項目
   const defaultTodos = [
@@ -55,14 +57,9 @@ const TripApp = () => {
   // To-Do List 狀態 (初始值設為預設項目)
   const [todos, setTodos] = useState(defaultTodos);
   const [todoInput, setTodoInput] = useState('');
-
-  // AI 狀態
-  const [showAiModal, setShowAiModal] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiResponse, setAiResponse] = useState('');
   
-  // Gemini API Key (請在此填入您的 API Key)
-  const apiKey = ""; 
+  // 檔案上傳 Ref
+  const fileInputRef = useRef(null);
 
   // 初始化讀取
   useEffect(() => {
@@ -76,7 +73,6 @@ const TripApp = () => {
       
       if (savedTodos) {
         const parsedTodos = JSON.parse(savedTodos);
-        // 如果儲存的清單不為空，則使用儲存的；如果是空的，則保留預設值 (讓您能看到新增的固定項目)
         if (parsedTodos.length > 0) {
           setTodos(parsedTodos);
         }
@@ -99,7 +95,52 @@ const TripApp = () => {
     localStorage.setItem('japanTripTodos', JSON.stringify(todos));
   }, [todos]);
 
-  // 行程邏輯
+  // --- 資料備份與還原功能 ---
+  const handleExportData = () => {
+    const data = {
+      japanTripProgress: completedItems,
+      japanTripExpenses: expenses,
+      japanTripTodos: todos,
+      exportDate: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `japan_trip_backup_${new Date().toLocaleDateString().replace(/\//g, '-')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    alert('備份檔案已下載！請妥善保存。');
+  };
+
+  const handleImportData = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        
+        if (data.japanTripProgress) setCompletedItems(data.japanTripProgress);
+        if (data.japanTripExpenses) setExpenses(data.japanTripExpenses);
+        if (data.japanTripTodos) setTodos(data.japanTripTodos);
+        
+        alert('資料還原成功！');
+      } catch (error) {
+        console.error('Import error:', error);
+        alert('檔案格式錯誤，無法還原。');
+      }
+    };
+    reader.readAsText(file);
+    // 重置 input 以便重複選擇同一檔案
+    event.target.value = ''; 
+  };
+
+  // --- 邏輯函數 ---
   const toggleItem = (dayIndex, itemIndex) => {
     const key = `${dayIndex}-${itemIndex}`;
     setCompletedItems(prev => ({
@@ -108,7 +149,6 @@ const TripApp = () => {
     }));
   };
 
-  // 記帳邏輯
   const addExpense = (e) => {
     e.preventDefault();
     if (!expenseForm.item || !expenseForm.amount) return;
@@ -134,7 +174,6 @@ const TripApp = () => {
     return expenses.reduce((acc, curr) => acc + curr.amount, 0);
   };
 
-  // To-Do 邏輯
   const addTodo = (e) => {
     e.preventDefault();
     if (!todoInput.trim()) return;
@@ -158,74 +197,6 @@ const TripApp = () => {
     setTodos(todos.filter(todo => todo.id !== id));
   };
 
-  // Gemini AI 功能
-  const fetchGeminiAdvice = async () => {
-    setShowAiModal(true);
-    setAiLoading(true);
-    setAiResponse('');
-
-    const currentDayData = itinerary.find(d => d.day === activeDay);
-    const dayItems = currentDayData.items.map(i => i.text).join(", ");
-    
-    const prompt = `
-      你是一位專業、幽默的日本旅遊嚮導。
-      這是我的日本旅行第 ${activeDay} 天行程：
-      標題：${currentDayData.title}
-      重點：${currentDayData.highlight}
-      詳細行程：${dayItems}
-
-      請用繁體中文 (台灣用語) 給我針對這一天行程的 4 個實用建議。
-      格式請用 HTML 標籤 (例如 <b>, <br/>) 讓顯示更清楚，不要用 Markdown。
-      
-      請包含以下類別：
-      1. 🚗 **交通貼士** (針對自駕或電車的具體建議，例如御殿場或河口湖的路況/停車)
-      2. 💡 **私房推薦** (行程附近的隱藏美食或拍照點)
-      3. 🗣️ **實用日語** (針對當天活動的一句實用日語及發音/意思)
-      4. ⚠️ **貼心提醒** (天氣、穿著或避開人潮的建議)
-      
-      語氣要像朋友一樣親切。
-    `;
-
-    try {
-      const result = await callGeminiAPI(prompt);
-      setAiResponse(result);
-    } catch (error) {
-      console.error("AI Error:", error);
-      setAiResponse("抱歉，AI 導遊現在有點忙碌 (連線錯誤或缺少 API Key)，請稍後再試。🚗💨");
-    } finally {
-      setAiLoading(false);
-    }
-  };
-
-  const callGeminiAPI = async (prompt) => {
-    if (!apiKey) {
-       // handle missing key
-    }
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-    const payload = {
-      contents: [{ parts: [{ text: prompt }] }]
-    };
-
-    const delays = [1000, 2000, 4000];
-    for (let i = 0; i < 3; i++) {
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) throw new Error(`API call failed: ${response.statusText}`);
-
-        const data = await response.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || "沒有收到回應";
-      } catch (err) {
-        if (i === 2) throw err;
-        await new Promise(resolve => setTimeout(resolve, delays[i]));
-      }
-    }
-  };
-
   const categories = {
     food: { label: '飲食', icon: Utensils, color: 'text-orange-500 bg-orange-50' },
     shopping: { label: '購物', icon: ShoppingBag, color: 'text-pink-500 bg-pink-50' },
@@ -240,14 +211,17 @@ const TripApp = () => {
       day: 1, date: "3/7 (五)", title: "抵達日本・成田", highlight: "準備開始旅程",
       items: [
         { icon: Plane, text: "抵達成田機場 (NRT) 14:00~19:05 UO650", location: "Narita Airport" },
-        { icon: Utensils, text: "落機後機場食野" },
+        { icon: Hotel, text: "入住：ART 成田酒店 (已BOOK)", location: "ART Hotel Narita" },
+        { icon: Utensils, text: "晚餐 Option 1：機場內餐廳" },
+        { icon: Utensils, text: "晚餐 Option 2：酒店餐廳 NARITA BOLD KITCHEN", note: "LAST CALL 21:00" },
+        { icon: Utensils, text: "晚餐 Option 3：酒店中日料理「櫻」Soh", note: "LAST CALL 20:00/20:30" },
+        { icon: ShoppingBag, text: "晚餐 Option 4：酒店內便利店 24 小時 FamilyMart (本館 2樓)" },
         { 
           icon: Utensils, 
-          text: "OPTION: 磯丸水産 24HRS (成田店)", 
+          text: "宵夜 Option：磯丸水産 24HRS (成田店)", 
           link: "https://maps.app.goo.gl/xf7cUAaELEWEGB7B7",
           note: "宵夜好去處"
-        },
-        { icon: Hotel, text: "入住：ART 成田酒店 (已BOOK)", location: "ART Hotel Narita" }
+        }
       ]
     },
     {
@@ -352,9 +326,8 @@ const TripApp = () => {
       ]
     },
     {
-      day: 7, date: "3/13 (四)", title: "最後衝刺", highlight: "SHIBUYA SKY & 購物",
+      day: 7, date: "3/13 (四)", title: "最後衝刺", highlight: "購物與美食",
       items: [
-        { icon: Building, text: "SHIBUYA SKY (澀谷天空) (未BOOK)", location: "SHIBUYA SKY" },
         { icon: ShoppingBag, text: "最後購物：新宿 / 銀座 / 澀谷", location: "Shibuya Crossing" },
         { icon: MapPin, text: "自選自由行程" },
         { 
@@ -400,18 +373,41 @@ const TripApp = () => {
   const renderOverview = () => (
     <div className="space-y-6 pb-24">
       {/* Overview Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-3xl p-6 text-white shadow-lg shadow-blue-200">
-        <div className="flex items-center justify-between mb-2 opacity-80">
+      <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-3xl p-6 text-white shadow-lg shadow-blue-200 relative overflow-hidden">
+        <div className="flex items-center justify-between mb-2 opacity-80 relative z-10">
           <span className="text-sm font-medium">行程總覽</span>
           <List size={20} />
         </div>
-        <div className="flex items-end gap-2">
+        <div className="flex items-end gap-2 relative z-10">
           <h2 className="text-3xl font-bold">8 天 7 夜</h2>
           <span className="text-lg opacity-90 mb-1">之旅</span>
         </div>
-        <p className="text-sm opacity-90 mt-2 flex items-center gap-1">
+        <p className="text-sm opacity-90 mt-2 flex items-center gap-1 relative z-10">
           <MapPin size={14} /> 東京・河口湖・自駕遊
         </p>
+      </div>
+
+      {/* Backup Actions */}
+      <div className="flex gap-3">
+        <button 
+          onClick={handleExportData}
+          className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 py-3 rounded-xl text-sm font-bold shadow-sm active:scale-95 transition-all"
+        >
+          <Download size={16} /> 備份資料
+        </button>
+        <button 
+          onClick={() => fileInputRef.current.click()}
+          className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 py-3 rounded-xl text-sm font-bold shadow-sm active:scale-95 transition-all"
+        >
+          <Upload size={16} /> 還原資料
+        </button>
+        <input 
+          type="file" 
+          ref={fileInputRef} 
+          onChange={handleImportData} 
+          accept=".json" 
+          className="hidden" 
+        />
       </div>
 
       {/* Daily Summary */}
@@ -472,24 +468,13 @@ const TripApp = () => {
     const currentDayData = itinerary.find(d => d.day === activeDay);
     return (
       <div className="space-y-4 pb-24">
-        {/* Day Header with AI Button */}
+        {/* Day Header */}
         <div className="mb-4">
-          <div className="flex justify-between items-start">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-800">{currentDayData.title}</h2>
-              <p className="text-pink-500 font-medium flex items-center gap-1 mt-1">
-                <Mountain size={16} />
-                {currentDayData.highlight}
-              </p>
-            </div>
-            <button 
-              onClick={fetchGeminiAdvice}
-              className="flex items-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-3 py-2 rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95"
-            >
-              <Sparkles size={14} />
-              AI 導遊建議
-            </button>
-          </div>
+          <h2 className="text-2xl font-bold text-slate-800">{currentDayData.title}</h2>
+          <p className="text-pink-500 font-medium flex items-center gap-1 mt-1">
+            <Mountain size={16} />
+            {currentDayData.highlight}
+          </p>
         </div>
 
         {/* Timeline Items */}
@@ -546,9 +531,51 @@ const TripApp = () => {
         <div className="text-4xl font-bold tracking-tight">
           ¥ {getTotalExpenses().toLocaleString()}
         </div>
-        <div className="mt-4 flex gap-2 text-xs opacity-70">
+
+        {/* AA制除開功能 */}
+        <div className="mt-4 border-t border-white/20 pt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium flex items-center gap-1 opacity-90">
+              <Users size={14} /> 除開幾份？(AA制)
+            </span>
+            <div className="flex gap-1 bg-black/20 p-1 rounded-lg">
+              {[1, 2, 3, 4].map(num => (
+                <button
+                  key={num}
+                  onClick={() => setSplitCount(num)}
+                  className={`w-6 h-6 text-xs rounded-md flex items-center justify-center transition-colors ${
+                    splitCount === num 
+                      ? 'bg-white text-indigo-600 font-bold' 
+                      : 'text-white hover:bg-white/10'
+                  }`}
+                >
+                  {num}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {splitCount > 1 && (
+            <div className="mt-2 flex justify-between items-end bg-black/10 p-3 rounded-xl">
+              <span className="text-sm font-medium opacity-90">每人平均：</span>
+              <div className="text-right">
+                <div className="text-xl font-bold text-emerald-300">
+                  ¥ {Math.round(getTotalExpenses() / splitCount).toLocaleString()}
+                </div>
+                <div className="text-[10px] opacity-70">
+                  ~HKD {Math.round((getTotalExpenses() * EXCHANGE_RATE) / splitCount)}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-4 flex gap-3 text-xs opacity-70">
           <span className="bg-white/20 px-2 py-1 rounded-md">{expenses.length} 筆紀錄</span>
-          <span className="bg-white/20 px-2 py-1 rounded-md">目前紀錄至 Day {activeDay}</span>
+          <span className="bg-white/20 px-2 py-1 rounded-md flex items-center gap-1">
+            <RefreshCw size={10} />
+            總計約 HKD ${(getTotalExpenses() * EXCHANGE_RATE).toLocaleString(undefined, {maximumFractionDigits: 0})}
+          </span>
         </div>
       </div>
 
@@ -621,8 +648,11 @@ const TripApp = () => {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-bold text-slate-700">¥ {ex.amount.toLocaleString()}</span>
+                <div className="flex items-center gap-3 text-right">
+                  <div>
+                    <div className="font-bold text-slate-700">¥ {ex.amount.toLocaleString()}</div>
+                    <div className="text-[10px] text-slate-400">~HKD {Math.round(ex.amount * EXCHANGE_RATE)}</div>
+                  </div>
                   <button onClick={() => deleteExpense(ex.id)} className="text-slate-300 hover:text-red-500 p-1">
                     <Trash2 size={16} />
                   </button>
@@ -801,61 +831,6 @@ const TripApp = () => {
           </button>
         </div>
       </div>
-
-      {/* AI Modal */}
-      {showAiModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl w-full max-w-md max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-5 border-b border-slate-100">
-              <div className="flex items-center gap-2 text-indigo-600">
-                <Sparkles className="fill-current" size={20} />
-                <h3 className="font-bold text-lg">AI 導遊建議 (Day {activeDay})</h3>
-              </div>
-              <button 
-                onClick={() => setShowAiModal(false)}
-                className="p-2 hover:bg-slate-100 rounded-full transition-colors"
-              >
-                <X size={20} className="text-slate-400" />
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="p-6 overflow-y-auto min-h-[200px]">
-              {aiLoading ? (
-                <div className="flex flex-col items-center justify-center py-10 gap-4 text-slate-400">
-                  <Loader2 size={40} className="animate-spin text-indigo-500" />
-                  <p className="text-sm font-medium animate-pulse">正在為您分析行程...</p>
-                </div>
-              ) : (
-                <div className="prose prose-sm prose-indigo max-w-none">
-                  {aiResponse ? (
-                    <div 
-                      className="space-y-4 text-slate-600 leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: aiResponse.replace(/\n/g, '<br/>') }} 
-                    />
-                  ) : (
-                    <div className="text-center py-8 text-slate-400">
-                      <MessageSquareQuote size={40} className="mx-auto mb-2 opacity-50" />
-                      <p>點擊按鈕來獲取建議！</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-4 border-t border-slate-100 bg-slate-50 rounded-b-3xl">
-              <button 
-                onClick={() => setShowAiModal(false)}
-                className="w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors"
-              >
-                知道了
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
