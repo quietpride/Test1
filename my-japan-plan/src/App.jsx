@@ -783,16 +783,16 @@ const TripApp = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
       {/* Header Area */}
-      <div 
-        className="relative h-48 overflow-hidden bg-cover bg-center"
-        style={{ backgroundImage: `url('/fuji.jpg')` }}
-      >
-        {/* 加入黑色半透明遮罩，確保文字在圖片上能清楚顯示 */}
-        <div className="absolute inset-0 bg-black/25"></div>
-        <div className="absolute bottom-4 left-6 text-white z-10">
-          <p className="text-sm font-medium opacity-90 tracking-widest uppercase mb-1 drop-shadow-md">2025 日本之旅</p>
-          <h1 className="text-3xl font-bold drop-shadow-lg">東京・河口湖・自駕遊</h1>
-          <div className="flex items-center gap-2 mt-2 text-sm opacity-90 drop-shadow-md">
+      <div className="relative h-48 bg-gradient-to-r from-blue-600 to-indigo-700 overflow-hidden">
+        <div className="absolute inset-0 opacity-20">
+          <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M0 100 L50 20 L100 100 Z" fill="white" />
+          </svg>
+        </div>
+        <div className="absolute bottom-4 left-6 text-white">
+          <p className="text-sm font-medium opacity-90 tracking-widest uppercase mb-1">2025 日本之旅</p>
+          <h1 className="text-3xl font-bold">東京・河口湖・自駕遊</h1>
+          <div className="flex items-center gap-2 mt-2 text-sm opacity-90">
             <CalendarDays size={16} />
             <span>3/7 - 3/14 (8天)</span>
           </div>
