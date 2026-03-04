@@ -230,7 +230,9 @@ const TripApp = () => {
         { icon: Car, text: "成田取車：辦理手續，檢查車況", location: "Narita Airport Car Rental" },
         { icon: ShoppingBag, text: "酒酒井 Premium Outlets", location: "Shisui Premium Outlets" },
         { icon: Car, text: "開車前往河口湖 (享受風景)" },
-        { icon: Hotel, text: "河口湖住宿 ＋ 溫泉", location: "Kawaguchiko Onsen" }
+        { icon: Hotel, text: "河口湖住宿 ＋ 溫泉", location: "Kawaguchiko Onsen" },
+        { icon: ShoppingBag, text: "夾公仔 Option 1：河口湖 (收20:00)", location: "2986 Funatsu, Fujikawaguchiko, Minamitsuru District, Yamanashi 401-0301", note: "MAPCODE: 184 562 866" },
+        { icon: ShoppingBag, text: "夾公仔 Option 2：富士市 Round 1 (收24:00)", location: "4-15 Yashirocho, Fuji, Shizuoka 417-0024", note: "MAPCODE: 72 233 889" }
       ]
     },
     {
@@ -262,7 +264,9 @@ const TripApp = () => {
           link: "https://maps.app.goo.gl/DkdNguPXo722J4yj7",
           note: "REMARKS: 先睇 GOOGLE MAP"
         },
-        { icon: Hotel, text: "住宿：Airbnb (富士山 河口湖城市渡假別墅)", location: "Kawaguchiko" }
+        { icon: Hotel, text: "住宿：Airbnb (富士山 河口湖城市渡假別墅)", location: "Kawaguchiko" },
+        { icon: ShoppingBag, text: "夾公仔 Option 1：河口湖 (收20:00)", location: "2986 Funatsu, Fujikawaguchiko, Minamitsuru District, Yamanashi 401-0301", note: "MAPCODE: 184 562 866" },
+        { icon: ShoppingBag, text: "夾公仔 Option 2：富士市 Round 1 (收24:00)", location: "4-15 Yashirocho, Fuji, Shizuoka 417-0024", note: "MAPCODE: 72 233 889" }
       ]
     },
     {
@@ -275,7 +279,9 @@ const TripApp = () => {
           location: "Starbucks Fujikawa Service Area Down Line" 
         },
         { icon: Car, text: "Optional: 箱根感受髮夾灣" },
-        { icon: Hotel, text: "住宿：Airbnb (富士山 河口湖城市渡假別墅)", location: "Kawaguchiko" }
+        { icon: Hotel, text: "住宿：Airbnb (富士山 河口湖城市渡假別墅)", location: "Kawaguchiko" },
+        { icon: ShoppingBag, text: "夾公仔 Option 1：河口湖 (收20:00)", location: "2986 Funatsu, Fujikawaguchiko, Minamitsuru District, Yamanashi 401-0301", note: "MAPCODE: 184 562 866" },
+        { icon: ShoppingBag, text: "夾公仔 Option 2：富士市 Round 1 (收24:00)", location: "4-15 Yashirocho, Fuji, Shizuoka 417-0024", note: "MAPCODE: 72 233 889" }
       ]
     },
     {
@@ -302,8 +308,20 @@ const TripApp = () => {
         },
         { 
           icon: Hotel, 
-          text: "住宿：HM12613 Japanesestyle villa on the YamanoteLine", 
-          link: "https://maps.app.goo.gl/juE48Xk6KUhzyT2T6" 
+          text: "住宿：東京 Airbnb (墨田區) (MAPCODE: 531 032 866)", 
+          link: "https://maps.app.goo.gl/DAPKH9U57F2xV4kQA" 
+        },
+        {
+          icon: Car,
+          text: "泊車 OPTION 1：本所3丁目 (MAPCODE: 741 200 000)",
+          location: "3 Chome Honjo, Sumida City, Tokyo 130-0004",
+          note: "近 Airbnb，可點擊直接導航"
+        },
+        {
+          icon: Car,
+          text: "泊車 OPTION 2：石原3-32-8 (MAPCODE: 531 032 866)",
+          location: "3 Chome-32-8 Ishiwara, Sumida City, Tokyo 130-0011",
+          note: "備用停車場，可點擊直接導航"
         }
       ]
     },
@@ -320,8 +338,20 @@ const TripApp = () => {
         },
         { 
           icon: Hotel, 
-          text: "住宿：HM12613 Japanesestyle villa on the YamanoteLine", 
-          link: "https://maps.app.goo.gl/juE48Xk6KUhzyT2T6" 
+          text: "住宿：東京 Airbnb (墨田區) (MAPCODE: 531 032 866)", 
+          link: "https://maps.app.goo.gl/DAPKH9U57F2xV4kQA" 
+        },
+        {
+          icon: Car,
+          text: "泊車 OPTION 1：本所3丁目 (MAPCODE: 741 200 000)",
+          location: "3 Chome Honjo, Sumida City, Tokyo 130-0004",
+          note: "近 Airbnb，可點擊直接導航"
+        },
+        {
+          icon: Car,
+          text: "泊車 OPTION 2：石原3-32-8 (MAPCODE: 531 032 866)",
+          location: "3 Chome-32-8 Ishiwara, Sumida City, Tokyo 130-0011",
+          note: "備用停車場，可點擊直接導航"
         }
       ]
     },
@@ -337,8 +367,20 @@ const TripApp = () => {
         },
         { 
           icon: Hotel, 
-          text: "住宿：HM12613 Japanesestyle villa on the YamanoteLine", 
-          link: "https://maps.app.goo.gl/juE48Xk6KUhzyT2T6" 
+          text: "住宿：東京 Airbnb (墨田區) (MAPCODE: 531 032 866)", 
+          link: "https://maps.app.goo.gl/DAPKH9U57F2xV4kQA" 
+        },
+        {
+          icon: Car,
+          text: "泊車 OPTION 1：本所3丁目 (MAPCODE: 741 200 000)",
+          location: "3 Chome Honjo, Sumida City, Tokyo 130-0004",
+          note: "近 Airbnb，可點擊直接導航"
+        },
+        {
+          icon: Car,
+          text: "泊車 OPTION 2：石原3-32-8 (MAPCODE: 531 032 866)",
+          location: "3 Chome-32-8 Ishiwara, Sumida City, Tokyo 130-0011",
+          note: "備用停車場，可點擊直接導航"
         }
       ]
     },
@@ -741,16 +783,16 @@ const TripApp = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
       {/* Header Area */}
-      <div className="relative h-48 bg-gradient-to-r from-blue-600 to-indigo-700 overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <path d="M0 100 L50 20 L100 100 Z" fill="white" />
-          </svg>
-        </div>
-        <div className="absolute bottom-4 left-6 text-white">
-          <p className="text-sm font-medium opacity-90 tracking-widest uppercase mb-1">2025 日本之旅</p>
-          <h1 className="text-3xl font-bold">東京・河口湖・自駕遊</h1>
-          <div className="flex items-center gap-2 mt-2 text-sm opacity-90">
+      <div 
+        className="relative h-48 overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: `url('/fuji.jpg')` }}
+      >
+        {/* 加入黑色半透明遮罩，確保文字在圖片上能清楚顯示 */}
+        <div className="absolute inset-0 bg-black/25"></div>
+        <div className="absolute bottom-4 left-6 text-white z-10">
+          <p className="text-sm font-medium opacity-90 tracking-widest uppercase mb-1 drop-shadow-md">2025 日本之旅</p>
+          <h1 className="text-3xl font-bold drop-shadow-lg">東京・河口湖・自駕遊</h1>
+          <div className="flex items-center gap-2 mt-2 text-sm opacity-90 drop-shadow-md">
             <CalendarDays size={16} />
             <span>3/7 - 3/14 (8天)</span>
           </div>
